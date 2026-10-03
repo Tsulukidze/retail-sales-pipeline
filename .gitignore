@@ -1,0 +1,33 @@
+# --- Secrets -------------------------------------------------------------
+.env
+kaggle.json
+access_token
+
+# --- Source data (must never be committed) -------------------------------
+data/*
+!data/.gitkeep
+*.csv
+*.parquet
+*.zip
+
+# --- Airflow runtime ------------------------------------------------------
+logs/*
+!logs/.gitkeep
+airflow.cfg
+airflow.db
+
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# --- Editors / OS ---------------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

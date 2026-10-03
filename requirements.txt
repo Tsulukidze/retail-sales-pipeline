@@ -1,0 +1,4 @@
+# Runtime dependencies installed into the Airflow image.
+# apache-airflow-providers-postgres (and psycopg2) ship with the base image.
+kaggle==2.2.4
+Faker==40.40.0
