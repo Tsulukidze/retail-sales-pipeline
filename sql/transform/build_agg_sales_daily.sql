@@ -1,8 +1,9 @@
 -- Rebuild the daily summary per day, store and product from the fact table.
 --
 -- I rebuild the whole table on every run instead of updating only new days.
--- With 100,000 sales this takes about a second, and the table can never get out of sync with the fact table
--- All statements run in one transaction: if the INSERT fails, the TRUNCATE is undone and the old data stays.
+-- With 100,000 sales this takes about a second, and the table can never get
+-- out of sync with the fact table. All statements run in one transaction:
+-- if the INSERT fails, the TRUNCATE is undone and the old data stays.
 -- For much bigger data, I would rebuild only the days that changed.
 
 TRUNCATE TABLE mart.agg_sales_daily_store_product;

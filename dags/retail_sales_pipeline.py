@@ -147,7 +147,13 @@ def retail_sales_pipeline():
         split_statements=True,
         show_return_value_in_logs=True,
     )
-    build_store_lfl = EmptyOperator(task_id="build_store_lfl")
+    build_store_lfl = SQLExecuteQueryOperator(
+        task_id="build_store_lfl",
+        conn_id=CONFIG.dwh_conn_id,
+        sql="transform/build_store_lfl.sql",
+        split_statements=True,
+        show_return_value_in_logs=True,  # prints: all rows, rows with LFL = true
+    )
     update_product_abc = EmptyOperator(task_id="update_product_abc")
     run_data_quality_checks = EmptyOperator(task_id="run_data_quality_checks")
 
