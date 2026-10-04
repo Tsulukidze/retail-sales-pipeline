@@ -3,7 +3,7 @@
 This file only defines the tasks and their order. The real work is done by
 the `retail_pipeline` package (Python) and the files in `sql/` (SQL).
 
-Tasks made with EmptyOperator are placeholders. I will replace them step by step.
+Tasks made with EmptyOperator are placeholders. I replace them step by step.
 """
 
 from __future__ import annotations
@@ -19,7 +19,9 @@ from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.sdk import TaskGroup, dag, get_current_context, task
 
 from retail_pipeline.config import LOCAL_TIMEZONE, PipelineConfig
+from retail_pipeline.dimensions import load_product_dimension, load_store_dimension
 from retail_pipeline.extract import KaggleDatasetDownloader, prune_old_snapshots, snapshot_name
+from retail_pipeline.names import NameGenerator
 from retail_pipeline.parsing import read_staging_rows
 from retail_pipeline.staging_loader import load_staging_rows
 from retail_pipeline.validation import validate_source_file
@@ -30,6 +32,12 @@ CONFIG = PipelineConfig.from_env()
 DDL_FILES = sorted(
     str(path.relative_to(CONFIG.sql_dir)) for path in CONFIG.sql_dir.glob("ddl/*.sql")
 )
+
+
+def _dwh_connection():
+    """Open a new warehouse connection. Use it with `with`, so it is closed at the end."""
+    return closing(PostgresHook(postgres_conn_id=CONFIG.dwh_conn_id).get_conn())
+
 
 DEFAULT_ARGS = {
     "owner": "data-engineering",
@@ -69,9 +77,9 @@ def retail_sales_pipeline():
     # means a bug or bad data, and trying again would not help.
     @task(retries=3, retry_delay=timedelta(minutes=2), retry_exponential_backoff=True)
     def extract_dataset() -> str:
-        # We use run_after (the time the run started) for the folder name.
-        # In Airflow 3, a run started by hand may have no logical date, so we
-        # cannot use `ds` here.
+        # I use run_after (the time the run started) for the folder name.
+        # In Airflow 3, a run started by hand may have no logical date, so
+        # `ds` cannot be used here.
         run_after = get_current_context()["dag_run"].run_after
         target_dir = CONFIG.raw_dir / snapshot_name(run_after, LOCAL_TIMEZONE)
 
@@ -92,18 +100,36 @@ def retail_sales_pipeline():
         # The Airflow run ID shows which run loaded each row.
         batch_id = get_current_context()["run_id"]
 
-        hook = PostgresHook(postgres_conn_id=CONFIG.dwh_conn_id)
-        with closing(hook.get_conn()) as connection:
+        with _dwh_connection() as connection:
             loaded = load_staging_rows(connection, rows, batch_id=batch_id, source_file=csv_path)
 
         print(f"Loaded {loaded:,} rows into staging")
         return loaded
 
+    @task
+    def load_dim_store() -> int:
+        with _dwh_connection() as connection:
+            return load_store_dimension(connection, NameGenerator())
+
+    @task
+    def load_dim_product() -> int:
+        with _dwh_connection() as connection:
+            return load_product_dimension(connection, NameGenerator())
+
+    # The four dimension loads do not depend on each other, so they run in parallel.
     with TaskGroup(group_id="load_dimensions") as load_dimensions:
-        EmptyOperator(task_id="load_dim_date")
-        EmptyOperator(task_id="load_dim_store")
-        EmptyOperator(task_id="load_dim_product")
-        EmptyOperator(task_id="load_lookup_dimensions")
+        SQLExecuteQueryOperator(
+            task_id="load_dim_date",
+            conn_id=CONFIG.dwh_conn_id,
+            sql="transform/load_dim_date.sql",
+        )
+        SQLExecuteQueryOperator(
+            task_id="load_lookup_dimensions",
+            conn_id=CONFIG.dwh_conn_id,
+            sql="transform/load_lookup_dimensions.sql",
+        )
+        load_dim_store()
+        load_dim_product()
 
     load_fact_sales = EmptyOperator(task_id="load_fact_sales")
     build_agg_sales_daily = EmptyOperator(task_id="build_agg_sales_daily")
