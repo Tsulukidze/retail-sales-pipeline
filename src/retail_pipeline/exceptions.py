@@ -1,6 +1,6 @@
 """Error types used by the pipeline.
 
-Separate error types make the logs clear: we can see at once if the source
+Separate error types make the logs clear: they show at once if the source
 was not available or if the file was wrong. This also helps to decide if a
 retry makes sense.
 """
@@ -28,4 +28,8 @@ class RowParsingError(PipelineError):
 
 
 class StagingLoadError(PipelineError):
-    """The staging table does not contain what we tried to load."""
+    """The staging table does not contain the rows that were sent."""
+
+
+class DataQualityError(PipelineError):
+    """One or more data quality checks did not pass."""

@@ -2,8 +2,6 @@
 
 This file only defines the tasks and their order. The real work is done by
 the `retail_pipeline` package (Python) and the files in `sql/` (SQL).
-
-Tasks made with EmptyOperator are placeholders. I replace them step by step.
 """
 
 from __future__ import annotations
@@ -15,7 +13,6 @@ from pathlib import Path
 import pendulum
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.sdk import TaskGroup, dag, get_current_context, task
 
 from retail_pipeline.config import LOCAL_TIMEZONE, PipelineConfig
@@ -23,6 +20,7 @@ from retail_pipeline.dimensions import load_product_dimension, load_store_dimens
 from retail_pipeline.extract import KaggleDatasetDownloader, prune_old_snapshots, snapshot_name
 from retail_pipeline.names import NameGenerator
 from retail_pipeline.parsing import read_staging_rows
+from retail_pipeline.quality import format_report, raise_if_failed, run_quality_checks
 from retail_pipeline.staging_loader import load_staging_rows
 from retail_pipeline.validation import validate_source_file
 
@@ -161,7 +159,18 @@ def retail_sales_pipeline():
         split_statements=True,
         show_return_value_in_logs=True,  # prints: product code, ABC by quantity, ABC by amount
     )
-    run_data_quality_checks = EmptyOperator(task_id="run_data_quality_checks")
+
+    @task
+    def run_data_quality_checks() -> int:
+        checks_sql = (CONFIG.sql_dir / "checks" / "data_quality_checks.sql").read_text()
+        with _dwh_connection() as connection:
+            results = run_quality_checks(connection, checks_sql)
+
+        # Print the full report first, so the log shows every check, also
+        # when the task fails in the next line.
+        print(format_report(results))
+        raise_if_failed(results)
+        return len(results)
 
     csv_path = extract_dataset()
     validated_csv_path = validate_source(csv_path)
@@ -174,7 +183,7 @@ def retail_sales_pipeline():
         >> load_fact_sales
         >> build_agg_sales_daily
         >> [build_store_lfl, update_product_abc]
-        >> run_data_quality_checks
+        >> run_data_quality_checks()
     )
 
 
