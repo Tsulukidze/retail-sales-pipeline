@@ -137,7 +137,16 @@ def retail_sales_pipeline():
         sql="transform/load_fact_sales.sql",
         show_return_value_in_logs=True,  # prints the number of inserted rows
     )
-    build_agg_sales_daily = EmptyOperator(task_id="build_agg_sales_daily")
+    build_agg_sales_daily = SQLExecuteQueryOperator(
+        task_id="build_agg_sales_daily",
+        conn_id=CONFIG.dwh_conn_id,
+        sql="transform/build_agg_sales_daily.sql",
+        # The file has several statements. Splitting them lets Airflow return
+        # the result of the last one (the row count). They still run in one
+        # transaction, because the hook commits only at the end.
+        split_statements=True,
+        show_return_value_in_logs=True,
+    )
     build_store_lfl = EmptyOperator(task_id="build_store_lfl")
     update_product_abc = EmptyOperator(task_id="update_product_abc")
     run_data_quality_checks = EmptyOperator(task_id="run_data_quality_checks")
