@@ -1,6 +1,7 @@
-# Extends the official Airflow image with the pipeline's Python dependencies.
-# Pinning apache-airflow in the same pip call prevents pip from silently
-# upgrading or downgrading Airflow while resolving the extra packages.
+# Our Airflow image: the official Airflow image plus our Python packages.
+# We install apache-airflow with the same version in the same pip command.
+# This stops pip from changing the Airflow version while it installs the
+# other packages.
 ARG AIRFLOW_VERSION=3.3.2
 FROM apache/airflow:${AIRFLOW_VERSION}
 

@@ -1,0 +1,7 @@
+# Packages for local development and tests only. Not installed into the Airflow image.
+-r requirements.txt
+pandas
+pytest
+ruff
+# Timezone data for zoneinfo. Linux and macOS have it already; Windows needs this package.
+tzdata
