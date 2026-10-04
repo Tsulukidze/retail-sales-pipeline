@@ -13,6 +13,14 @@
 -- Before running: run the DAG once, so dim_date covers 2023 and 2024 and the
 -- product, category and payment method tables have rows.
 --
+-- WARNING: always run the WHOLE file, never a selected part.
+-- The protection comes from BEGIN at the top and ROLLBACK at the bottom.
+-- In DataGrip's auto-commit mode, a single statement run on its own is saved
+-- immediately: TRUNCATE would really empty core.fact_sales, and the INSERTs
+-- would really add test stores and test sales.
+-- If that happens: run ROLLBACK, then check core.fact_sales and core.dim_store.
+-- To repair: DROP SCHEMA staging, core, mart CASCADE; then run the DAG once.
+--
 -- How to run:
 --   DataGrip: open this file and run the whole script (Execute Script).
 --   psql:     psql -h localhost -p 5433 -U <DWH_USER> -d retail_dwh -f sql/manual_checks/check_lfl_logic.sql

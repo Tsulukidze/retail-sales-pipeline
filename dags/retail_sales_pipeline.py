@@ -154,7 +154,13 @@ def retail_sales_pipeline():
         split_statements=True,
         show_return_value_in_logs=True,  # prints: all rows, rows with LFL = true
     )
-    update_product_abc = EmptyOperator(task_id="update_product_abc")
+    update_product_abc = SQLExecuteQueryOperator(
+        task_id="update_product_abc",
+        conn_id=CONFIG.dwh_conn_id,
+        sql="transform/update_product_abc.sql",
+        split_statements=True,
+        show_return_value_in_logs=True,  # prints: product code, ABC by quantity, ABC by amount
+    )
     run_data_quality_checks = EmptyOperator(task_id="run_data_quality_checks")
 
     csv_path = extract_dataset()
