@@ -131,7 +131,12 @@ def retail_sales_pipeline():
         load_dim_store()
         load_dim_product()
 
-    load_fact_sales = EmptyOperator(task_id="load_fact_sales")
+    load_fact_sales = SQLExecuteQueryOperator(
+        task_id="load_fact_sales",
+        conn_id=CONFIG.dwh_conn_id,
+        sql="transform/load_fact_sales.sql",
+        show_return_value_in_logs=True,  # prints the number of inserted rows
+    )
     build_agg_sales_daily = EmptyOperator(task_id="build_agg_sales_daily")
     build_store_lfl = EmptyOperator(task_id="build_store_lfl")
     update_product_abc = EmptyOperator(task_id="update_product_abc")
