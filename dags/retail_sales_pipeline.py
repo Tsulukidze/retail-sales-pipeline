@@ -3,11 +3,12 @@
 This file only defines the tasks and their order. The real work is done by
 the `retail_pipeline` package (Python) and the files in `sql/` (SQL).
 
-Tasks made with EmptyOperator are placeholders. We replace them step by step.
+Tasks made with EmptyOperator are placeholders. I will replace them step by step.
 """
 
 from __future__ import annotations
 
+from contextlib import closing
 from datetime import timedelta
 from pathlib import Path
 
@@ -19,6 +20,8 @@ from airflow.sdk import TaskGroup, dag, get_current_context, task
 
 from retail_pipeline.config import LOCAL_TIMEZONE, PipelineConfig
 from retail_pipeline.extract import KaggleDatasetDownloader, prune_old_snapshots, snapshot_name
+from retail_pipeline.parsing import read_staging_rows
+from retail_pipeline.staging_loader import load_staging_rows
 from retail_pipeline.validation import validate_source_file
 
 CONFIG = PipelineConfig.from_env()
@@ -29,7 +32,7 @@ DDL_FILES = sorted(
 )
 
 DEFAULT_ARGS = {
-    "owner": "TT",
+    "owner": "data-engineering",
     "retries": 0,
     "execution_timeout": timedelta(minutes=30),
 }
@@ -82,7 +85,19 @@ def retail_sales_pipeline():
         print(f"Source file OK: {report.row_count:,} rows")
         return csv_path
 
-    load_staging = EmptyOperator(task_id="load_staging")
+    @task
+    def load_staging(csv_path: str) -> int:
+        rows = read_staging_rows(Path(csv_path))
+
+        # The Airflow run ID shows which run loaded each row.
+        batch_id = get_current_context()["run_id"]
+
+        hook = PostgresHook(postgres_conn_id=CONFIG.dwh_conn_id)
+        with closing(hook.get_conn()) as connection:
+            loaded = load_staging_rows(connection, rows, batch_id=batch_id, source_file=csv_path)
+
+        print(f"Loaded {loaded:,} rows into staging")
+        return loaded
 
     with TaskGroup(group_id="load_dimensions") as load_dimensions:
         EmptyOperator(task_id="load_dim_date")
@@ -98,11 +113,11 @@ def retail_sales_pipeline():
 
     csv_path = extract_dataset()
     validated_csv_path = validate_source(csv_path)
+    staged_row_count = load_staging(validated_csv_path)
 
     check_dwh_connection() >> init_schema >> csv_path
     (
-        validated_csv_path
-        >> load_staging
+        staged_row_count
         >> load_dimensions
         >> load_fact_sales
         >> build_agg_sales_daily

@@ -16,3 +16,16 @@ class SourceExtractionError(PipelineError):
 
 class SourceValidationError(PipelineError):
     """The downloaded file does not have the expected structure."""
+
+
+class RowParsingError(PipelineError):
+    """One value in a source row has the wrong format."""
+
+    def __init__(self, column: str, value: str | None, problem: str) -> None:
+        super().__init__(f"{column}={value!r}: {problem}")
+        self.column = column
+        self.value = value
+
+
+class StagingLoadError(PipelineError):
+    """The staging table does not contain what we tried to load."""
