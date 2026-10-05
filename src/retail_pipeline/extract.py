@@ -90,7 +90,15 @@ class KaggleDatasetDownloader:
             client.dataset_download_files(
                 self._dataset, path=str(target_dir), force=True, quiet=True, unzip=True
             )
-        except Exception as exc:  # any error from the external Kaggle library
+        except SystemExit as exc:
+            # The kaggle library calls exit() when it finds no valid
+            # credentials. SystemExit is not an Exception, so it needs its own
+            # handler; otherwise the task fails without a clear message.
+            raise SourceExtractionError(
+                "Kaggle login failed: no valid credentials found. Set KAGGLE_USERNAME "
+                "and KAGGLE_KEY (or KAGGLE_API_TOKEN) in .env."
+            ) from exc
+        except Exception as exc:  # any other error from the external Kaggle library
             raise SourceExtractionError(
                 f"Failed to download Kaggle dataset '{self._dataset}': {exc}"
             ) from exc

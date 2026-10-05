@@ -54,6 +54,19 @@ def test_download_replaces_previous_content_of_the_snapshot(tmp_path):
     assert not (target / "stale.csv").exists()
 
 
+def test_missing_credentials_give_a_clear_error(tmp_path):
+    # The kaggle library calls exit(1) when it finds no credentials.
+    client = FakeKaggleClient()
+
+    def exit_like_kaggle() -> None:
+        raise SystemExit(1)
+
+    client.authenticate = exit_like_kaggle
+
+    with pytest.raises(SourceExtractionError, match="Kaggle login failed"):
+        make_downloader(client).download(tmp_path / "snap")
+
+
 def test_client_errors_are_wrapped(tmp_path):
     client = FakeKaggleClient(error=OSError("connection reset"))
 

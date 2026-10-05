@@ -169,7 +169,9 @@ def retail_sales_pipeline():
 
     @task
     def run_data_quality_checks() -> int:
-        checks_sql = (CONFIG.sql_dir / "checks" / "data_quality_checks.sql").read_text()
+        checks_sql = (CONFIG.sql_dir / "checks" / "data_quality_checks.sql").read_text(
+            encoding="utf-8"
+        )
         with _dwh_connection() as connection:
             results = run_quality_checks(connection, checks_sql)
 
