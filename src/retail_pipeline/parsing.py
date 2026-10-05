@@ -62,10 +62,10 @@ STAGING_ROW_COLUMNS: tuple[str, ...] = tuple(field.name for field in fields(Stag
 
 
 def derive_store_code(store_location: str) -> str:
-    """Return the state code from an address, e.g. 'HI'.
+    r"""Return the state code from an address, e.g. 'HI'.
 
-    Example: '176 Andrew Cliffs\\nBaileyfort, HI 93354' -> 'HI'.
-    We use the state code as the store, because the source has no store ID.
+    Example: '176 Andrew Cliffs\nBaileyfort, HI 93354' -> 'HI'.
+    I use the state code as the store, because the source has no store ID.
     """
     lines = store_location.strip().splitlines()
     match = STATE_CODE_PATTERN.search(lines[-1]) if lines else None
@@ -77,7 +77,7 @@ def derive_store_code(store_location: str) -> str:
 def compute_row_hash(raw_row: Mapping[str, str | None]) -> str:
     """Return the md5 hash of the original values of a source row.
 
-    We use the raw text, before any type conversion, so the hash describes
+    I use the raw text, before any type conversion, so the hash describes
     the row exactly as it is in the file. Only the expected columns are used,
     so a new extra column in the file does not change the hash.
     """
@@ -111,8 +111,8 @@ def parse_source_row(raw_row: Mapping[str, str | None]) -> StagingRow:
 def read_staging_rows(csv_path: Path) -> list[StagingRow]:
     """Read and parse all rows of the source file.
 
-    We check every row first and collect all problems. If any row is wrong,
-    we stop and load nothing: a partly loaded table would give wrong totals
+    I check every row first and collect all problems. If any row is wrong,
+    nothing is loaded: a partly loaded table would give wrong totals
     without anyone noticing.
     """
     rows: list[StagingRow] = []
@@ -131,7 +131,8 @@ def read_staging_rows(csv_path: Path) -> list[StagingRow]:
     if errors:
         examples = "; ".join(errors[:MAX_ERRORS_IN_MESSAGE])
         raise SourceValidationError(
-            f"{len(errors)} rows in {csv_path.name} could not be parsed. First problems: {examples}"
+            f"{len(errors)} rows in {csv_path.name} could not be parsed. "
+            f"First problems: {examples}"
         )
 
     logger.info("Parsed %d rows from %s", len(rows), csv_path.name)

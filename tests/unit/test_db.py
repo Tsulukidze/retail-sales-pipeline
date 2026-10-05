@@ -30,7 +30,7 @@ def test_transaction_commits_when_block_succeeds():
 def test_transaction_rolls_back_and_reraises_on_error():
     connection = FakeConnection()
 
-    with pytest.raises(ValueError), transaction(connection):
+    with pytest.raises(ValueError, match="boom"), transaction(connection):
         raise ValueError("boom")
 
     assert (connection.commits, connection.rollbacks) == (0, 1)

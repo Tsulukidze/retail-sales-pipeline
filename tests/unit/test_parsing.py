@@ -59,7 +59,7 @@ def test_derive_store_code(address, expected):
 
 @pytest.mark.parametrize("address", ["", "No state here", "Somewhere, hi 93354"])
 def test_derive_store_code_fails_without_state(address):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="no state code"):
         derive_store_code(address)
 
 

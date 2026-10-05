@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS core.fact_sales (
     loaded_at            TIMESTAMPTZ     NOT NULL DEFAULT now()
 );
 
--- Indexes on the columns we join and filter on most often.
+-- Indexes on the columns that joins and filters use most often.
 CREATE INDEX IF NOT EXISTS ix_fact_sales_date_id ON core.fact_sales (date_id);
 CREATE INDEX IF NOT EXISTS ix_fact_sales_store_id ON core.fact_sales (store_id);
 CREATE INDEX IF NOT EXISTS ix_fact_sales_product_id ON core.fact_sales (product_id);

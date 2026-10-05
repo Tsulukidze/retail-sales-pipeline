@@ -86,7 +86,7 @@ def test_raise_if_failed_names_the_failed_checks():
         CheckResult("check_c", False, "bad"),
     ]
 
-    with pytest.raises(DataQualityError, match="2 of 3 .* check_b, check_c"):
+    with pytest.raises(DataQualityError, match=r"2 of 3 .* check_b, check_c"):
         raise_if_failed(results)
 
 

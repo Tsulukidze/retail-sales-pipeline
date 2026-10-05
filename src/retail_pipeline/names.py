@@ -56,13 +56,16 @@ class NameGenerator:
     """
 
     def __init__(self, locale: str = "en_US") -> None:
+        """Create a generator that makes names in the style of `locale`."""
         self._faker = Faker(locale)
 
     def store_name(self, store_code: str) -> str:
+        """Return the name for a store code, e.g. "MO" -> "West Anthony Center"."""
         self._seed("store", store_code)
         return f"{self._faker.city()} {self._faker.random_element(STORE_NAME_SUFFIXES)}"
 
     def product_name(self, product_code: str) -> str:
+        """Return the name for a product code, e.g. "A" -> "Gray Backpack"."""
         self._seed("product", product_code)
         # safe_color_name() gives simple colors like "navy" or "olive".
         color = self._faker.safe_color_name().title()

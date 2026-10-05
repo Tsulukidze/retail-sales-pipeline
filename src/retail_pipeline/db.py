@@ -15,11 +15,14 @@ from typing import Any, Protocol
 class DbConnection(Protocol):
     """The connection methods this project needs. Both drivers have them."""
 
-    def cursor(self) -> Any: ...
+    def cursor(self) -> Any:
+        """Return a new cursor."""
 
-    def commit(self) -> None: ...
+    def commit(self) -> None:
+        """Save the current transaction."""
 
-    def rollback(self) -> None: ...
+    def rollback(self) -> None:
+        """Undo the current transaction."""
 
 
 @contextmanager

@@ -22,6 +22,7 @@ class RowParsingError(PipelineError):
     """One value in a source row has the wrong format."""
 
     def __init__(self, column: str, value: str | None, problem: str) -> None:
+        """Describe the problem with the value of `column`."""
         super().__init__(f"{column}={value!r}: {problem}")
         self.column = column
         self.value = value

@@ -62,16 +62,26 @@ INSERT_NEW_PRODUCTS = """
 
 
 def load_store_dimension(connection: DbConnection, generator: NameGenerator) -> int:
-    """Add stores that are in staging but not yet in dim_store. Returns how many were added."""
+    """Add stores that are in staging but not yet in dim_store.
+
+    Returns how many were added.
+    """
     return _load_named_dimension(
         connection, SELECT_STORE_CODES, INSERT_NEW_STORES, generator.store_name, "dim_store"
     )
 
 
 def load_product_dimension(connection: DbConnection, generator: NameGenerator) -> int:
-    """Add products that are in staging but not yet in dim_product. Returns how many were added."""
+    """Add products that are in staging but not yet in dim_product.
+
+    Returns how many were added.
+    """
     return _load_named_dimension(
-        connection, SELECT_PRODUCT_CODES, INSERT_NEW_PRODUCTS, generator.product_name, "dim_product"
+        connection,
+        SELECT_PRODUCT_CODES,
+        INSERT_NEW_PRODUCTS,
+        generator.product_name,
+        "dim_product",
     )
 
 

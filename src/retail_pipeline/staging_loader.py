@@ -41,7 +41,7 @@ def load_staging_rows(
 
         # Check that the table has exactly the rows I sent.
         cursor.execute(f"SELECT COUNT(*) FROM {STAGING_TABLE}")
-        loaded = cursor.fetchone()[0]
+        loaded = int(cursor.fetchone()[0])
         if loaded != len(rows):
             raise StagingLoadError(f"Sent {len(rows)} rows, but the table has {loaded}")
 

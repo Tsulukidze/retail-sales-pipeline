@@ -1,6 +1,6 @@
 """Description of the source file, kept in one place.
 
-Maps each column name in the Kaggle CSV to the snake_case name we use in the
+Maps each column name in the Kaggle CSV to the snake_case name I use in the
 warehouse. File validation and the staging load both use this mapping.
 """
 

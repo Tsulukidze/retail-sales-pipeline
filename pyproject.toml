@@ -9,8 +9,39 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.ruff]
-line-length = 100
+# PEP 8 suggests 79 characters, but allows teams to agree on up to 99.
+line-length = 99
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM"]
+select = [
+    "E",    # pycodestyle errors (PEP 8)
+    "W",    # pycodestyle warnings (PEP 8)
+    "F",    # pyflakes: unused imports, undefined names
+    "I",    # isort: import order (PEP 8)
+    "N",    # pep8-naming: naming conventions (PEP 8)
+    "D",    # pydocstyle: docstrings (PEP 257)
+    "B",    # bugbear: common bug patterns
+    "UP",   # pyupgrade: modern Python syntax
+    "SIM",  # simpler code
+    "C4",   # better comprehensions
+    "RET",  # return statements
+    "PTH",  # pathlib instead of os.path
+    "PL",   # pylint rules
+    "PT",   # pytest style
+    "RUF",  # ruff's own rules
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+# In tests, the test name explains the test, and literal numbers in asserts
+# ("assert total == 62") are clearer than constants.
+"tests/**" = ["D", "PLR2004"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+# kaggle and faker have no type information.
+ignore_missing_imports = true

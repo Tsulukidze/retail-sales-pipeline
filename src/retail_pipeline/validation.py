@@ -1,6 +1,6 @@
 """Check the structure of the downloaded file.
 
-This runs before we write anything to the database. If the file is broken or
+This runs before anything is written to the database. If the file is broken or
 its columns have changed, the pipeline stops here with a clear message.
 Checks of single values (types, dates) happen later, in the staging load.
 """
@@ -58,7 +58,7 @@ def validate_source_file(
             logger.warning("Unexpected columns in %s will be ignored: %s", path.name, extra)
 
         # StoreLocation values contain line breaks inside quotes. csv.reader
-        # understands this, so we count real rows, not lines of text.
+        # understands this, so it counts real rows, not lines of text.
         row_count = sum(1 for _ in reader)
 
     if row_count < min_rows:

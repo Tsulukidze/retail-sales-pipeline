@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS core.dim_date (
     days_in_month  SMALLINT    NOT NULL
 );
 
--- Stores. The source file has no store ID, so we use the state code from
+-- Stores. The source file has no store ID, so I use the state code from
 -- the store address as the store (see README, "Store derivation").
 CREATE TABLE IF NOT EXISTS core.dim_store (
     store_id     INTEGER       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

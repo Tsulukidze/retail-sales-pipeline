@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 class KaggleClient(Protocol):
     """The Kaggle API methods that this module needs."""
 
-    def authenticate(self) -> None: ...
+    def authenticate(self) -> None:
+        """Log in with the credentials from the environment."""
 
     def dataset_download_files(
         self,
@@ -27,25 +28,29 @@ class KaggleClient(Protocol):
         force: bool = False,
         quiet: bool = True,
         unzip: bool = False,
-    ) -> None: ...
+    ) -> None:
+        """Download all files of a dataset into `path`."""
 
 
 def default_client_factory() -> KaggleClient:
     """Create the real Kaggle client.
 
-    We import `kaggle` here, not at the top of the file. The `kaggle` package
+    I import `kaggle` here, not at the top of the file. The `kaggle` package
     tries to log in as soon as it is imported. At the top of the file, this
     would break DAG loading and unit tests on machines without credentials.
     """
-    from kaggle.api.kaggle_api_extended import KaggleApi
+    from kaggle.api.kaggle_api_extended import KaggleApi  # noqa: PLC0415 (see docstring)
 
-    return KaggleApi()
+    # kaggle has no type hints, so its objects are "Any" for mypy. This line
+    # tells mypy which interface the object has.
+    client: KaggleClient = KaggleApi()
+    return client
 
 
 def snapshot_name(moment: datetime, timezone: str) -> str:
     """Return the folder name for a download, e.g. '2026-10-04'.
 
-    `moment` must include a timezone. We convert it to the local timezone
+    `moment` must include a timezone. I convert it to the local timezone
     first, so a run just after midnight in Tbilisi gets the Tbilisi date.
     """
     if moment.tzinfo is None:
@@ -61,6 +66,10 @@ class KaggleDatasetDownloader:
         dataset: str,
         client_factory: Callable[[], KaggleClient] = default_client_factory,
     ) -> None:
+        """Create a downloader for `dataset`, e.g. "owner/dataset-name".
+
+        `client_factory` creates the Kaggle client. Tests pass a fake one.
+        """
         self._dataset = dataset
         self._client_factory = client_factory
 

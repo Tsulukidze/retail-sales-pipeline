@@ -15,7 +15,8 @@
 --
 -- Known limitation: rows are only added, never changed or deleted. If the
 -- source corrected or removed a sale, the old row would stay here. The data
--- quality checks compare the fact table with staging, so this would be noticed.
+-- quality checks compare the fact table with staging, so this would be
+-- noticed. See README, "Production considerations".
 
 WITH inserted AS (
     INSERT INTO core.fact_sales (

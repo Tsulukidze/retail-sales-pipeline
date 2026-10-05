@@ -82,7 +82,7 @@ def test_prune_on_missing_folder_does_nothing(tmp_path):
 
 
 def test_prune_rejects_invalid_keep(tmp_path):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="at least 1"):
         prune_old_snapshots(tmp_path, keep=0)
 
 

@@ -1,5 +1,6 @@
 # Packages for local development and tests only. Not installed into the Airflow image.
 -r requirements.txt
+mypy
 pandas
 pytest
 ruff

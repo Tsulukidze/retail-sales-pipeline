@@ -56,6 +56,13 @@ DEFAULT_ARGS = {
     tags=["retail", "elt"],
 )
 def retail_sales_pipeline():
+    """Load the Kaggle retail sales file into the warehouse and build the analytics.
+
+    Steps: extract and validate the file, load staging, load the dimensions and
+    the fact table, build the daily aggregation, LFL and ABC, then run the data
+    quality checks. Airflow shows this text as the DAG description in the UI.
+    """
+
     @task
     def check_dwh_connection() -> str:
         """Stop early if the warehouse is not reachable."""
